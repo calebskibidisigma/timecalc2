@@ -1,21 +1,16 @@
 {
-    "name": "Time Machine",
-    "short_name": "Time Machine",
-    "description": "Calculate what time it was minutes ago",
-    "start_url": "/",
-    "display": "standalone",
-    "background_color": "#1a1a2e",
-    "theme_color": "#8B5CF6",
-    "icons": [
-        {
-            "src": "9953794-fotor-2025042914323.png",
-            "sizes": "192x192",
-            "type": "image/png"
-        },
-        {
-            "src": "9953794.png",
-            "sizes": "512x512",
-            "type": "image/png"
-        }
-    ]
-} 
+  "name": "Time Machine",
+  "short_name": "Time Machine",
+  "description": "Calculate what time it was minutes ago",
+  // Use “.” (current folder) instead of “/”
+  "start_url": "./index.html",
+  // Limit your PWA to this folder
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#1a1a2e",
+  "theme_color": "#8B5CF6",
+  "icons": [
+    { "src": "9953794-fotor-2025042914323.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "9953794.png",                  "sizes": "512x512", "type": "image/png" }
+  ]
+}
