@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#8B5CF6">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Time Machine">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <title>Time Calculator</title>
+    <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#8B5CF6',
+                        secondary: '#EC4899'
+                    },
+                    borderRadius: {
+                        'none': '0px',
+                        'sm': '8px',
+                        DEFAULT: '12px',
+                        'md': '16px',
+                        'lg': '20px',
+                        'xl': '24px',
+                        '2xl': '28px',
+                        '3xl': '32px',
+                        'full': '9999px',
+                        'button': '12px'
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.6.0/remixicon.min.css">
+    <style>
+        :where([class^="ri-"])::before {
+            content: "\f3c2";
+        }
+
+        select option {
+            background: #1f2937;
+            color: white;
+            padding: 12px;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: rgba(139, 92, 246, 0.5);
+            box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.25);
+        }
+
+        body {
+            font-family: 'Inter',
+            sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            background-attachment: fixed;
+            min-height: 100vh;
+            color: rgba(255, 255, 255, 0.9);
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        @supports (-webkit-touch-callout: none) {
+            body {
+                min-height: -webkit-fill-available;
+            }
+        }
+
+        .glass {
+            /* The base background and opacity */
+            background: rgba(255, 255, 255, 0.15);
+            /* A subtle gradient overlay for depth */
+            background-image: linear-gradient(to bottom right, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02));
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .glass-input {
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        .glass-input:focus {
+            outline: none;
+            border-color: rgba(139, 92, 246, 0.5);
+            box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.25);
+        }
+
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+
+        .result-appear {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        #result-container {
+            /* Updated glass styles for better visibility */
+            background: rgba(0, 0, 0, 0.4);
+            background-image: linear-gradient(to bottom right, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.2));
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2), inset 0 0 10px rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 1.25rem;
+            text-align: center;
+        }
+
+        #result-container.hidden {
+            display: none;
+        }
+
+        #result {
+            /* Updated text styles */
+            font-size: 1.875rem;
+            font-weight: bold;
+            color: white;
+        } 
+    </style>
+</head>
+
+<body class="flex items-center justify-center p-4 md:p-6">
+    <div class="glass rounded-lg w-full max-w-lg mx-auto p-6 md:p-8">
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-['Pacifico'] text-white mb-2">Time Machine</h1>
+            <p class="text-sm text-gray-300">Calculate what time it was minutes ago</p>
+        </div>
+        <div class="mb-8">
+            <div class="mb-6">
+                <label class="block text-sm font-medium mb-2 text-gray-200">Current Time</label>
+                <div id="current-time" class="text-2xl font-bold text-white mb-4"></div>
+            </div>
+            <div class="mb-6">
+                <label class="block text-sm font-medium mb-2 text-gray-200">Enter Time</label>
+                <div class="flex gap-4">
+                    <div class="w-1/3">
+                        <input type="number" id="hours" min="1" max="12" placeholder="HH"
+                            class="glass-input w-full px-4 py-3 rounded focus:ring-primary !rounded-button text-center text-lg">
+                    </div>
+                    <div class="w-1/3">
+                        <input type="number" id="minutes" min="0" max="59" placeholder="MM"
+                            class="glass-input w-full px-4 py-3 rounded focus:ring-primary !rounded-button text-center text-lg">
+                    </div>
+                    <div class="w-1/3">
+                        <div class="relative">
+                            <select id="ampm"
+                                class="glass-input w-full px-4 py-3 rounded appearance-none focus:ring-primary !rounded-button text-center cursor-pointer text-lg">
+                                <option value="AM">AM</option>
+                                <option value="PM" selected>PM</option>
+                            </select>
+                            <div class="absolute inset-y-0 right-3 flex items-center pointer-events-none">
+                                <i class="ri-arrow-down-s-line text-gray-300"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="flex gap-4 mb-8">
+            <button id="calculate"
+                class="w-1/2 bg-primary bg-opacity-80 hover:bg-opacity-90 active:scale-[0.98] transition-all text-white py-4 px-6 !rounded-button whitespace-nowrap text-lg font-medium">Calculate</button>
+            <button id="clear"
+                class="w-1/2 bg-secondary bg-opacity-80 hover:bg-opacity-90 active:scale-[0.98] transition-all text-white py-4 px-6 !rounded-button whitespace-nowrap text-lg font-medium">Reset</button>
+        </div>
+        <div id="result-container" class="rounded-lg p-5 text-center hidden">
+            <h2 class="text-sm font-medium mb-2 text-gray-300">Time Passed</h2>
+            <div id="result" class="text-3xl font-bold text-white"></div>
+            <p class="text-sm text-gray-400 mt-2">minutes have passed</p>
+        </div>
+        <div id="error-container" class="bg-red-500 bg-opacity-20 border border-red-500 border-opacity-30 rounded-lg p-4 text-center hidden mt-4">
+            <p id="error-message" class="text-red-200 text-sm"></p>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const hoursInput = document.getElementById('hours');
+            const minutesInput = document.getElementById('minutes');
+            const ampmSelect = document.getElementById('ampm');
+            const calculateButton = document.getElementById('calculate');
+            const clearButton = document.getElementById('clear');
+            const resultContainer = document.getElementById('result-container');
+            const resultElement = document.getElementById('result');
+            const errorContainer = document.getElementById('error-container');
+            const errorMessage = document.getElementById('error-message');
+            const currentTimeElement = document.getElementById('current-time');
+
+            function updateCurrentTime() {
+                const now = new Date();
+                const hours = now.getHours();
+                const minutes = now.getMinutes();
+                const ampm = hours >= 12 ? 'PM' : 'AM';
+                const formattedHours = hours % 12 || 12;
+                const formattedMinutes = minutes.toString().padStart(2, '0');
+                currentTimeElement.textContent = `${formattedHours}:${formattedMinutes} ${ampm}`;
+            }
+
+            updateCurrentTime();
+            setInterval(updateCurrentTime, 1000);
+
+            hoursInput.addEventListener('input', function () {
+                let value = parseInt(this.value);
+                if (isNaN(value)) this.value = '';
+                else if (value < 1) this.value = '1';
+                else if (value > 12) this.value = '12';
+            });
+
+            minutesInput.addEventListener('input', function () {
+                let value = parseInt(this.value);
+                if (isNaN(value)) this.value = '';
+                else if (value < 0) this.value = '0';
+                else if (value > 59) this.value = '59';
+            });
+
+            calculateButton.addEventListener('click', calculateTimeDifference);
+
+            clearButton.addEventListener('click', function () {
+                hoursInput.value = '';
+                minutesInput.value = '';
+                ampmSelect.value = 'PM';
+                resultContainer.classList.add('hidden');
+                errorContainer.classList.add('hidden');
+            });
+
+            [hoursInput, minutesInput].forEach(input => {
+                input.addEventListener('keypress', function (e) {
+                    if (e.key === 'Enter') {
+                        calculateTimeDifference();
+                    }
+                });
+            });
+
+            function calculateTimeDifference() {
+                errorContainer.classList.add('hidden');
+                const hours = parseInt(hoursInput.value);
+                const minutes = parseInt(minutesInput.value);
+                const ampm = ampmSelect.value;
+
+                if (isNaN(hours) || isNaN(minutes)) {
+                    showError('Please enter valid time');
+                    return;
+                }
+
+                if (hours < 1 || hours > 12 || minutes < 0 || minutes > 59) {
+                    showError('Please enter valid time');
+                    return;
+                }
+
+                const now = new Date();
+                const inputTime = new Date();
+                let inputHours = hours;
+                if (ampm === 'PM' && hours !== 12) inputHours += 12;
+                if (ampm === 'AM' && hours === 12) inputHours = 0;
+
+                inputTime.setHours(inputHours, minutes, 0, 0);
+
+                // If input time is in the future, assume it's from the previous day
+                if (inputTime > now) {
+                    inputTime.setDate(inputTime.getDate() - 1);
+                }
+
+                const diffMs = now - inputTime;
+                const diffMinutes = Math.floor(diffMs / 60000);
+
+                resultElement.textContent = `${diffMinutes}`;
+                resultContainer.classList.remove('hidden');
+                resultContainer.classList.add('result-appear');
+                setTimeout(() => {
+                    resultContainer.classList.remove('result-appear');
+                }, 500);
+            }
+
+            function showError(message) {
+                errorMessage.textContent = message;
+                errorContainer.classList.remove('hidden');
+                resultContainer.classList.add('hidden');
+            }
+        });
+    </script>
+
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('service-worker.js')
+      .then(() => console.log("✅ Service Worker registered!"))
+      .catch(err => console.error("Service Worker error:", err));
+  }
+</script>
+</body>
+
+
+</html>
